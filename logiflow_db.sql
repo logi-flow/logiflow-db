@@ -1,1 +1,102 @@
-hi
+CREATE DATABASE IF NOT EXISTS `logi_flow_db`
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+use `logi_flow_db`;
+
+CREATE TABLE IF NOT EXISTS `roles` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT uq_roles_name UNIQUE (name)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+INSERT INTO `roles` (id, name)
+VALUES (DEFAULT, 'ADMIN');
+
+CREATE TABLE IF NOT EXISTS `users` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    role_id BIGINT NOT NULL,
+	username VARCHAR(20) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT uq_users_username UNIQUE (username),
+    CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `customers` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+	business_number VARCHAR(50) NOT NULL,
+    name VARCHAR(50) NOT NULL, 
+    representative_name VARCHAR(20) NOT NULL,
+    telephone VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    fax VARCHAR(50),
+    business_location VARCHAR(255) NOT NULL,
+    business_type VARCHAR(50) NOT NULL,
+    business_items VARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    # 담당자 직책 직무 이름 연락처 이메일
+    
+    CONSTRAINT uq_business_number UNIQUE (business_number),
+    CONSTRAINT fk_customers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT ck_customers_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED'))
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `drivers` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+	name VARCHAR(50) NOT NULL,
+    identity_number VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    pay INT NOT NULL,
+    company_join DATE NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT uq_identity_number UNIQUE (identity_number),
+    CONSTRAINT fk_drivers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT ck_drivers_status CHECK (status IN ('ACTIVED', 'INACTIVED', 'ASSIGNED'))
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `driver_licenses` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    driver_id BIGINT NOT NULL,
+    driver_number VARCHAR(50) NOT NULL,
+    type VARCHAR(50) NOT NULL, 
+    expired_date DATE NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_driver_licenses_driver_id FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE CASCADE,
+    CONSTRAINT ck_driver_licenses_type CHECK (status IN ('', '', ''))
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `employees` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    identity_number VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    department VARCHAR(20) NOT NULL,
+    position VARCHAR(20) NOT NULL,
+    company_join DATE NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_employees_user_id FOREIGN KEY (user_id) REFERENCES drivers(id) ON DELETE CASCADE,
+    CONSTRAINT ck_employees_department CHECK (status IN ('HUMAN_RESOURCES', 'LOGISTICS_MANAGEMENT')),
+    # HUMAN_RESOURCES: 인사팀, LOGISTICS_MANAGEMENT: 물류팀
+    CONSTRAINT ck_employees_position CHECK (status IN ('GENERAL_MANAGER', 'DEPUTY_GENERAL_MANAGER', 'MANGER', 'ASSISTANT_MANAGER', 'STAFF', 'INTERN'))
+    # GENERAL_MANAGER: 부장, DEPUTY_GENERAL_MANAGER: 차장, MANGER: 과장, ASSISTANT_MANAGER: 대리, STAFF: 사원, INTERN: 인턴
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
