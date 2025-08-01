@@ -360,7 +360,7 @@ CREATE TABLE IF NOT EXISTS `delete_logs` (
   record_id BIGINT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   expired_at DATE NOT NULL,
-  deleted_by BIGINT NOT NULL,
+  deleted_by BIGINT,
   delete_type VARCHAR(20) NOT NULL DEFAULT 'SOFT',
   
   CONSTRAINT fk_delete_logs_deleted_by FOREIGN KEY (deleted_by) REFERENCES users(id) ON DELETE SET NULL,
