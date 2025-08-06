@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS `logsi_flow_db`
+CREATE DATABASE IF NOT EXISTS `logi_flow_db`
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE `logsi_flow_db`;
+USE `logi_flow_db`;
 
 --# 권한
 CREATE TABLE IF NOT EXISTS `roles` (
@@ -23,12 +23,14 @@ CREATE TABLE IF NOT EXISTS `users` (
     role_id BIGINT NOT NULL,
 	username VARCHAR(20) NOT NULL,
     password VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL,
     
 	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     CONSTRAINT uq_users_username UNIQUE (username),
-    CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id)
+    CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles(id),
+    CONSTRAINT ck_users_status CHECK (status IN ('ACTIVE', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 고객사
@@ -77,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `contracts` (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
 	CONSTRAINT fk_contracts_customer_id FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
-    CONSTRAINT ck_contracts_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED'))
+    CONSTRAINT ck_contracts_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', 'DELETED'))
 )CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 기사
@@ -122,8 +124,8 @@ CREATE TABLE IF NOT EXISTS `employees` (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     CONSTRAINT uq_employees_identity_number UNIQUE (identity_number),
-    CONSTRAINT fk_employees_user_id FOREIGN KEY (user_id) REFERENCES drivers(id) ON DELETE CASCADE,
-    CONSTRAINT ck_employees_department CHECK (department IN ('HUMAN_RESOURCES', 'logsISTICS_MANAGEMENT')),
+    CONSTRAINT fk_employees_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT ck_employees_department CHECK (department IN ('HUMAN_RESOURCES', 'LOGISTICS_MANAGEMENT')),
     # HUMAN_RESOURCES: 인사팀, logsISTICS_MANAGEMENT: 물류팀
     CONSTRAINT ck_employees_position CHECK (position IN ('GENERAL_MANAGER', 'DEPUTY_GENERAL_MANAGER', 'MANGER', 'ASSISTANT_MANAGER', 'STAFF', 'INTERN'))
     # GENERAL_MANAGER: 부장, DEPUTY_GENERAL_MANAGER: 차장, MANGER: 과장, ASSISTANT_MANAGER: 대리, STAFF: 사원, INTERN: 인턴
@@ -153,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
 	vehicle_number VARCHAR(255) NOT NULL,
 	capacity INT NOT NULL,
 	fuel VARCHAR(20) NOT NULL,
-	mileage DECIMAL(7,2) NOT NULL,
+	mileage DECIMAL(10,2) NOT NULL,
 	status VARCHAR(20) NOT NULL,
 	model_name VARCHAR(20) NOT NULL,
 	model_year YEAR NOT NULL,
@@ -163,8 +165,8 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
 
   CONSTRAINT uq_vehicles_vehicle_number UNIQUE (vehicle_number),
   CONSTRAINT ck_vehicles_fuel CHECK (fuel IN ('GASOLINE', 'LPG', 'ELECTRIC', 'DIESEL')),
-  CONSTRAINT ck_vehicles_status CHECK (status IN ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'INACTIVE'))
-  # AVAILABLE: 배정 가능, IN_USE: 운행 중, UNDER_MAINTENANCE: 정비 중, INACTIVE: 비활성화
+  CONSTRAINT ck_vehicles_status CHECK (status IN ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'DELETED'))
+  # AVAILABLE: 배정 가능, IN_USE: 운행 중, UNDER_MAINTENANCE: 정비 중, DELETED: 비활성화
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 배송
@@ -173,8 +175,9 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   customer_id BIGINT NOT NULL,
   request_date DATETIME NOT NULL,
   item VARCHAR(255) NOT NULL,
-  weight DECIMAL(7,2) NOT NULL,
+  weight DECIMAL(10,2) NOT NULL,
   message VARCHAR(255),
+  is_hidden BOOLEAN DEFAULT FALSE,
   status VARCHAR(20) NOT NULL,
 
   pickup_name VARCHAR(100) NOT NULL,
@@ -193,7 +196,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
   CONSTRAINT fk_deliveries_customer_id FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
-  CONSTRAINT ck_delivery_status CHECK (status IN ('REQUESTED', 'RECEIPTED', 'CANCELLED', 'ASSIGNED', 'REJECTED'))
+  CONSTRAINT ck_delivery_status CHECK (status IN ('REQUESTED', 'RECEIPTED', 'CANCELLED', 'ASSIGNED', 'REJECTED', 'DELETED'))
   # REQUESTED: 요청, RECEIPTED: 접수, CANCELLED: 취소, ASSIGNED: 승인, REJECTED: 거절
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -203,12 +206,14 @@ CREATE TABLE IF NOT EXISTS `assignments` (
   driver_id BIGINT NOT NULL,
   vehicle_id BIGINT NOT NULL,
   is_primary BOOLEAN DEFAULT TRUE,
+  status VARCHAR(20) NOT NULL,
   
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
   CONSTRAINT fk_assignments_driver_id FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE CASCADE,
-  CONSTRAINT fk_assignments_vehicle_id FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+  CONSTRAINT fk_assignments_vehicle_id FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE,
+  CONSTRAINT ck_assignments_status CHECK (status IN ('ACTIVE', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 배차
@@ -217,8 +222,8 @@ CREATE TABLE IF NOT EXISTS `allocations` (
   delivery_id BIGINT NOT NULL,
   assignment_id BIGINT NOT NULL,
   district_name VARCHAR(20) NOT NULL,
-  start_mileage DECIMAL(7,2) NOT NULL,
-  end_mileage DECIMAL(7,2) NOT NULL,
+  start_mileage DECIMAL(10,2) NOT NULL,
+  end_mileage DECIMAL(10,2) NOT NULL,
   status VARCHAR(20) NOT NULL,
   
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -226,7 +231,7 @@ CREATE TABLE IF NOT EXISTS `allocations` (
   
   CONSTRAINT fk_allocations_delivery_id FOREIGN KEY (delivery_id) REFERENCES deliveries(id) ON DELETE CASCADE,
   CONSTRAINT fk_allocations_assignment_id FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
-  CONSTRAINT ck_allocations_status CHECK (status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'))
+  CONSTRAINT ck_allocations_status CHECK (status IN ('ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 배차스케줄
@@ -265,11 +270,13 @@ CREATE TABLE IF NOT EXISTS `allowance_types` (
   name VARCHAR(255) NOT NULL,
   description VARCHAR(255),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  status VARCHAR(20) NOT NULL,
 
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
-  CONSTRAINT uq_allowance_types_code UNIQUE (code)
+  CONSTRAINT uq_allowance_types_code UNIQUE (code),
+  CONSTRAINT ck_allowance_types_status CHECK (status IN ('ACTIVE', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 공제 항목
@@ -279,11 +286,13 @@ CREATE TABLE IF NOT EXISTS `deduction_types` (
   name VARCHAR(255) NOT NULL,
   description VARCHAR(255),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  status VARCHAR(20) NOT NULL,
 
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
-  CONSTRAINT uq_deduction_types_code UNIQUE (code)
+  CONSTRAINT uq_deduction_types_code UNIQUE (code),
+  CONSTRAINT ck_deduction_types_status CHECK (status IN ('ACTIVE', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 급여대장
@@ -313,7 +322,7 @@ CREATE TABLE IF NOT EXISTS `driver_allowances` (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   payroll_id BIGINT NOT NULL,
   allowance_type_id BIGINT NOT NULL,
-  quantity DECIMAL(7,2) NOT NULL,
+  quantity DECIMAL(10,2) NOT NULL,
   unit_price INT NOT NULL,
   amount INT NOT NULL,
   memo TEXT,
@@ -330,7 +339,7 @@ CREATE TABLE IF NOT EXISTS `driver_deductions` (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   payroll_id BIGINT NOT NULL,
   deduction_type_id BIGINT NOT NULL,
-  quantity DECIMAL(7,2) NOT NULL,
+  quantity DECIMAL(10,2) NOT NULL,
   unit_price INT NOT NULL,
   amount INT NOT NULL,
   memo TEXT,
@@ -416,8 +425,8 @@ CREATE TABLE IF NOT EXISTS `vehicles_status_logs` (
        
 	CONSTRAINT fk_vehicles_status_logs_vehicle_id FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL,
 	CONSTRAINT fk_vehicles_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
-	CONSTRAINT ck_vehicles_status_logs_prev_status CHECK (prev_status IN ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'INACTIVE')),
-	CONSTRAINT ck_vehicles_status_logs_new_status CHECK (new_status IN ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'INACTIVE'))
+	CONSTRAINT ck_vehicles_status_logs_prev_status CHECK (prev_status IN ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'DELETED')),
+	CONSTRAINT ck_vehicles_status_logs_new_status CHECK (new_status IN ('AVAILABLE', 'IN_USE', 'UNDER_MAINTENANCE', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 기사 정보 수정 로그
