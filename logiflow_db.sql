@@ -249,7 +249,7 @@ CREATE TABLE IF NOT EXISTS `schedules` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 출근부
-CREATE TABLE IF NOT EXISTS `attendance` (
+CREATE TABLE IF NOT EXISTS `attendances` (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   driver_id BIGINT NOT NULL,
   employee_id BIGINT NOT NULL, 
@@ -499,7 +499,7 @@ CREATE TABLE IF NOT EXISTS `employees_org_logs` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 운전 면허증 수정 로그
-CREATE TABLE IF NOT EXISTS `driver_license_logs` (
+CREATE TABLE IF NOT EXISTS `driver_licenses_logs` (
 	id BIGINT PRIMARY KEY AUTO_INCREMENT,
     driver_license_id BIGINT,
     changed_by BIGINT,
@@ -632,7 +632,7 @@ CREATE TABLE IF NOT EXISTS `deduction_types_update_logs` (
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_deduction_types_update_logs_allowance_type_id FOREIGN KEY (deduction_type_id) REFERENCES deduction_types(id) ON DELETE SET NULL,
+    CONSTRAINT fk_deduction_types_update_logs_deduction_type_id FOREIGN KEY (deduction_type_id) REFERENCES deduction_types(id) ON DELETE SET NULL,
     CONSTRAINT fk_deduction_types_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -701,6 +701,6 @@ CREATE TABLE IF NOT EXISTS `driver_deductions_update_logs` (
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_driver_deductions_update_logs_allowance_type_id FOREIGN KEY (driver_deduction_id) REFERENCES driver_deductions(id) ON DELETE SET NULL,
+    CONSTRAINT fk_driver_deductions_update_logs_driver_deduction_id FOREIGN KEY (driver_deduction_id) REFERENCES driver_deductions(id) ON DELETE SET NULL,
     CONSTRAINT fk_driver_deductions_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
