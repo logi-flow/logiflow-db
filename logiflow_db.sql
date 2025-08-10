@@ -46,9 +46,9 @@ CREATE TABLE IF NOT EXISTS `customers` (
     telephone VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
     fax VARCHAR(50),
-    business_zipcode INT NOT NULL,
+    business_zipcode VARCHAR(20) NOT NULL,
     business_address VARCHAR(255) NOT NULL,
-    business_address_detail VARCHAR(255) NOT NULL,
+    business_address_detail VARCHAR(255),
 
     charge_position VARCHAR(20),
     charge_department VARCHAR(20),
@@ -90,9 +90,9 @@ CREATE TABLE IF NOT EXISTS `drivers` (
 	name VARCHAR(50) NOT NULL,
     identity_number VARCHAR(50) NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
-    zipcode INT NOT NULL,
+    zipcode VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
-    address_detail VARCHAR(255) NOT NULL,
+    address_detail VARCHAR(255),
     district VARCHAR(20) NOT NULL, 
     pay INT NOT NULL,
     company_join DATE NOT NULL,
@@ -113,9 +113,9 @@ CREATE TABLE IF NOT EXISTS `employees` (
     name VARCHAR(50) NOT NULL,
     identity_number VARCHAR(50) NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
-    zipcode INT NOT NULL,
+    zipcode VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
-    address_detail VARCHAR(255) NOT NULL,
+    address_detail VARCHAR(255),
     department VARCHAR(20) NOT NULL,
     position VARCHAR(20) NOT NULL,
     company_join DATE NOT NULL,
@@ -182,15 +182,15 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 
   pickup_name VARCHAR(100) NOT NULL,
   pickup_phone VARCHAR(20) NOT NULL,
-  pickup_zipcode INT NOT NULL,
+  pickup_zipcode VARCHAR(20) NOT NULL,
   pickup_address VARCHAR(255) NOT NULL,
-  pickup_address_detail VARCHAR(255) NOT NULL,
+  pickup_address_detail VARCHAR(255),
 
   recipient_name VARCHAR(100) NOT NULL,
   recipient_phone VARCHAR(20) NOT NULL,
-  recipient_zipcode INT NOT NULL,
+  recipient_zipcode VARCHAR(20) NOT NULL,
   recipient_address VARCHAR(255) NOT NULL,
-  recipient_address_detail VARCHAR(255) NOT NULL,
+  recipient_address_detail VARCHAR(255),
 
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -437,8 +437,8 @@ CREATE TABLE IF NOT EXISTS `drivers_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -472,8 +472,8 @@ CREATE TABLE IF NOT EXISTS `employees_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -489,8 +489,8 @@ CREATE TABLE IF NOT EXISTS `employees_org_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -506,8 +506,8 @@ CREATE TABLE IF NOT EXISTS `driver_licenses_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -523,8 +523,8 @@ CREATE TABLE IF NOT EXISTS `deliveries_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -558,8 +558,8 @@ CREATE TABLE IF NOT EXISTS `assignments_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -575,8 +575,8 @@ CREATE TABLE IF NOT EXISTS `allocations_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -610,8 +610,8 @@ CREATE TABLE IF NOT EXISTS `allowance_types_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -627,8 +627,8 @@ CREATE TABLE IF NOT EXISTS `deduction_types_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -644,8 +644,8 @@ CREATE TABLE IF NOT EXISTS `driver_payrolls_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -679,8 +679,8 @@ CREATE TABLE IF NOT EXISTS `driver_allowances_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
@@ -696,8 +696,8 @@ CREATE TABLE IF NOT EXISTS `driver_deductions_update_logs` (
     changed_by_username VARCHAR(20) NOT NULL,
     change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
-    prev_data VARCHAR(100),
-    new_data VARCHAR(100),
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
