@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    CONSTRAINT uq_roles_name UNIQUE (name)
+    CONSTRAINT ck_role_name CHECK (name IN ('ADMIN', 'DRIVER', 'CUSTOMER', 'ALLOCATIONS_MANAGER', 'HUMAN_RESOURCES_MANAGER'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 INSERT INTO `roles` (id, name)
@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS `customers` (
     charge_phone VARCHAR(20),
     charge_email VARCHAR(100),
     
+    parcel_count INT NOT NULL,
+    
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
@@ -71,8 +73,11 @@ CREATE TABLE IF NOT EXISTS `contracts` (
     status VARCHAR(20) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    price INT NOT NULL,
-    volume_limit INT NOT NULL,
+    base_fee INT NOT NULL,
+    weight_limit_kg INT NOT NULL,
+	parcel_limit INT NOT NULL,
+    over_weight_fee_per_kg INT NOT NULL,
+    over_parcel_fee INT NOT NULL,
     special_terms TEXT,
     
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -112,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `employees` (
     user_id BIGINT NOT NULL,
     name VARCHAR(50) NOT NULL,
     identity_number VARCHAR(50) NOT NULL,
-    phone_number VARCHAR(20) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
     address_detail VARCHAR(255),
@@ -374,13 +379,30 @@ CREATE TABLE IF NOT EXISTS `delete_logs` (
   CONSTRAINT ck_delete_logs_delete_type CHECK (delete_type IN ('SOFT', 'HARD'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+--# 사용자 역할 로그
+CREATE TABLE IF NOT EXISTS `users_role_logs` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+	user_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+	prev_role VARCHAR(100) NOT NULL,
+	new_role VARCHAR(100) NOT NULL,
+    
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       
+	CONSTRAINT fk_users_role_logs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_users_role_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
+	CONSTRAINT ck_users_role_logs_prev_role CHECK (prev_role IN ('ADMIN', 'DRIVER', 'CUSTOMER', 'ALLOCATIONS_MANAGER', 'HUMAN_RESOURCES_MANAGER')),
+	CONSTRAINT ck_users_role_logs_new_role CHECK (new_role IN ('ADMIN', 'DRIVER', 'CUSTOMER', 'ALLOCATIONS_MANAGER', 'HUMAN_RESOURCES_MANAGER'))
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 --# 고객사 정보 수정 로그
 CREATE TABLE IF NOT EXISTS `customers_update_logs` (
 	id BIGINT PRIMARY KEY AUTO_INCREMENT,
     customer_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(100),
     new_data VARCHAR(100),
@@ -415,7 +437,7 @@ CREATE TABLE IF NOT EXISTS `contracts_update_logs` (
     contract_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
+    memo VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(100),
     new_data VARCHAR(100),
@@ -468,7 +490,6 @@ CREATE TABLE IF NOT EXISTS `drivers_update_logs` (
     driver_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -503,7 +524,6 @@ CREATE TABLE IF NOT EXISTS `employees_update_logs` (
     employee_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -520,7 +540,6 @@ CREATE TABLE IF NOT EXISTS `employees_org_logs` (
     employee_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -537,7 +556,6 @@ CREATE TABLE IF NOT EXISTS `driver_licenses_logs` (
     driver_license_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -554,7 +572,6 @@ CREATE TABLE IF NOT EXISTS `deliveries_update_logs` (
     delivery_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -589,7 +606,6 @@ CREATE TABLE IF NOT EXISTS `assignments_update_logs` (
     assignment_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -606,7 +622,6 @@ CREATE TABLE IF NOT EXISTS `allocations_update_logs` (
     allocation_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -641,7 +656,6 @@ CREATE TABLE IF NOT EXISTS `allowance_types_update_logs` (
     allowance_type_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -658,7 +672,6 @@ CREATE TABLE IF NOT EXISTS `deduction_types_update_logs` (
     deduction_type_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -675,7 +688,6 @@ CREATE TABLE IF NOT EXISTS `driver_payrolls_update_logs` (
     driver_payroll_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -710,7 +722,6 @@ CREATE TABLE IF NOT EXISTS `driver_allowances_update_logs` (
     driver_allowance_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
@@ -727,7 +738,6 @@ CREATE TABLE IF NOT EXISTS `driver_deductions_update_logs` (
     driver_deduction_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    change_reason VARCHAR(255),
 	type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(255),
     new_data VARCHAR(255),
