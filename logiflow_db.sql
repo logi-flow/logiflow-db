@@ -222,8 +222,6 @@ CREATE TABLE IF NOT EXISTS `allocations` (
   delivery_id BIGINT NOT NULL,
   assignment_id BIGINT NOT NULL,
   district_name VARCHAR(20) NOT NULL,
-  start_mileage DECIMAL(10,2) NOT NULL,
-  end_mileage DECIMAL(10,2) NOT NULL,
   status VARCHAR(20) NOT NULL,
   
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -409,6 +407,41 @@ CREATE TABLE IF NOT EXISTS `customers_status_logs` (
     CONSTRAINT fk_customers_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
 	CONSTRAINT ck_customers_status_logs_prev_status CHECK (prev_status IN ('PENDING', 'APPROVED', 'REJECTED')),
 	CONSTRAINT ck_customers_status_logs_new_status CHECK (new_status IN ('PENDING', 'APPROVED', 'REJECTED'))
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 계약 정보 수정 로그
+CREATE TABLE IF NOT EXISTS `contracts_update_logs` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    contract_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+	type VARCHAR(50) NOT NULL,
+    prev_data VARCHAR(100),
+    new_data VARCHAR(100),
+    
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_contracts_update_logs_customer_id FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_contracts_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 계약 상태 로그
+CREATE TABLE IF NOT EXISTS `contracts_status_logs` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+	contract_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+	prev_status VARCHAR(100) NOT NULL,
+	new_status VARCHAR(100) NOT NULL,
+    
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+       
+	CONSTRAINT fk_contracts_status_logs_contract_id FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_contracts_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL,
+	CONSTRAINT ck_contracts_status_logs_prev_status CHECK (prev_status IN ('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', 'DELETED')),
+	CONSTRAINT ck_contracts_status_logs_new_status CHECK (new_status IN ('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', 'DELETED'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 차량 상태 로그
