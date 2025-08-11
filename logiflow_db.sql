@@ -177,6 +177,7 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
 --# 배송
 CREATE TABLE IF NOT EXISTS `deliveries` (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  contract_id BIGINT NOT NULL,
   customer_id BIGINT NOT NULL,
   request_date DATETIME NOT NULL,
   item VARCHAR(255) NOT NULL,
@@ -197,9 +198,16 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   recipient_address VARCHAR(255) NOT NULL,
   recipient_address_detail VARCHAR(255),
 
+  final_fee INT NOT NULL,
+  over_weight_fee INT DEFAULT 0,
+  over_parcel_fee INT DEFAULT 0,
+  is_over_weight BOOLEAN DEFAULT FALSE,
+  is_over_parcel BOOLEAN DEFAULT FALSE,
+
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+  CONSTRAINT fk_deliveries_contract_id FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
   CONSTRAINT fk_deliveries_customer_id FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
   CONSTRAINT ck_delivery_status CHECK (status IN ('REQUESTED', 'RECEIPTED', 'CANCELLED', 'ASSIGNED', 'REJECTED', 'DELETED'))
   # REQUESTED: 요청, RECEIPTED: 접수, CANCELLED: 취소, ASSIGNED: 승인, REJECTED: 거절
