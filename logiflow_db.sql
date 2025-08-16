@@ -263,15 +263,16 @@ CREATE TABLE IF NOT EXISTS `schedules` (
 CREATE TABLE IF NOT EXISTS `attendances` (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   driver_id BIGINT NOT NULL,
-  employee_id BIGINT NOT NULL, 
-  work_start DATETIME,
+  work_start DATETIME NOT NULL,
   work_end DATETIME,
+  open_flag TINYINT GENERATED ALWAYS AS (IF (work_end IS NULL, 1, NULL)) STORED,
 
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   
-  CONSTRAINT fk_attendance_driver_id FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE CASCADE,
-  CONSTRAINT fk_attendance_employee_id FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+  CONSTRAINT uq_attendances_driver_id_work_start UNIQUE (driver_id, work_start),
+  CONSTRAINT uq_attendances_driver_id_open_flag UNIQUE (driver_id, open_flag),
+  CONSTRAINT fk_attendance_driver_id FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 수당 항목
