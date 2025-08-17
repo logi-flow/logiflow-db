@@ -384,6 +384,7 @@ CREATE TABLE IF NOT EXISTS `delete_logs` (
   deleted_by BIGINT,
   delete_type VARCHAR(20) NOT NULL DEFAULT 'SOFT',
   
+  CONSTRAINT uq_delete_logs UNIQUE (table_name, record_id, delete_type),
   CONSTRAINT fk_delete_logs_deleted_by FOREIGN KEY (deleted_by) REFERENCES users(id) ON DELETE SET NULL,
   CONSTRAINT ck_delete_logs_delete_type CHECK (delete_type IN ('SOFT', 'HARD'))
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
