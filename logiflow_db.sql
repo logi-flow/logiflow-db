@@ -27,10 +27,12 @@ CREATE TABLE IF NOT EXISTS `users` (
     role_id BIGINT NOT NULL,
     username VARCHAR(20) NOT NULL,
     password VARCHAR(255) NOT NULL,
+	email VARCHAR(100) NOT NULL,
     status VARCHAR(20) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_users_username UNIQUE (username),
+	CONSTRAINT uq_users_email UNIQUE (email),
     CONSTRAINT fk_users_role_id FOREIGN KEY (role_id) REFERENCES roles (id),
     CONSTRAINT ck_users_status CHECK (
         status IN ('ACTIVE', 'DELETED')
@@ -48,7 +50,6 @@ CREATE TABLE IF NOT EXISTS `customers` (
     business_type VARCHAR(50) NOT NULL,
     business_items VARCHAR(50) NOT NULL,
     telephone VARCHAR(20) NOT NULL,
-    email VARCHAR(100) NOT NULL,
     fax VARCHAR(50),
     business_zipcode VARCHAR(20) NOT NULL,
     business_address VARCHAR(255) NOT NULL,
@@ -62,6 +63,7 @@ CREATE TABLE IF NOT EXISTS `customers` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_customers_business_number UNIQUE (business_number),
+	CONSTRAINT uq_customers_telephone UNIQUE (telephone),
     CONSTRAINT fk_customers_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT ck_customers_status CHECK (
         status IN (
@@ -116,6 +118,7 @@ CREATE TABLE IF NOT EXISTS `drivers` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_drivers_identity_number UNIQUE (identity_number),
+	CONSTRAINT uq_drivers_phone_number UNIQUE (phone_number),
     CONSTRAINT fk_drivers_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT ck_drivers_status CHECK (
         status IN (
@@ -135,7 +138,7 @@ CREATE TABLE IF NOT EXISTS `employees` (
     user_id BIGINT NOT NULL,
     name VARCHAR(50) NOT NULL,
     identity_number VARCHAR(50) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
     address_detail VARCHAR(255),
@@ -145,6 +148,7 @@ CREATE TABLE IF NOT EXISTS `employees` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_employees_identity_number UNIQUE (identity_number),
+	CONSTRAINT uq_employees_phone_number UNIQUE (phone_number),
     CONSTRAINT fk_employees_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT ck_employees_department CHECK (
         department IN (
