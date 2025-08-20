@@ -757,3 +757,7 @@ CREATE TABLE IF NOT EXISTS `driver_deductions_update_logs` (
     CONSTRAINT fk_driver_deductions_update_logs_driver_deduction_id FOREIGN KEY (driver_deduction_id) REFERENCES driver_deductions(id) ON DELETE SET NULL,
     CONSTRAINT fk_driver_deductions_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 수당 항목 기본급(BASE) 추가
+INSERT INTO `allowance_types`
+VALUES(DEFAULT, 'BASE', '기본급', 'SYSTEM 자동 생성', TRUE, 'ACTIVE', DEFAULT, DEFAULT);
