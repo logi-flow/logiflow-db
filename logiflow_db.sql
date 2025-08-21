@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_deliveries_contract_id FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE CASCADE,
     CONSTRAINT fk_deliveries_customer_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE,
-    CONSTRAINT ck_delivery_status CHECK (
+	CONSTRAINT ck_delivery_status CHECK (
         status IN (
             'REQUESTED',
             'RECEIPTED',
@@ -277,6 +277,37 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
         )
     )
     # REQUESTED: 요청, RECEIPTED: 접수, CANCELLED: 취소, ASSIGNED: 승인, REJECTED: 거절
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `return_deliveries` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+	delivery_id BIGINT NOT NULL,
+    request_date DATE NOT NULL,
+    reason TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL,
+	pickup_name VARCHAR(100) NOT NULL,
+    pickup_phone VARCHAR(20) NOT NULL,
+    pickup_zipcode VARCHAR(20) NOT NULL,
+    pickup_address VARCHAR(255) NOT NULL,
+    pickup_address_detail VARCHAR(255),
+    recipient_name VARCHAR(100) NOT NULL,
+    recipient_phone VARCHAR(20) NOT NULL,
+    recipient_zipcode VARCHAR(20) NOT NULL,
+    recipient_address VARCHAR(255) NOT NULL,
+    recipient_address_detail VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_return_delieries_delivery_id FOREIGN KEY (delivery_id) REFERENCES deliveries (id),
+	CONSTRAINT ck_return_delieries_status CHECK (
+		status IN (
+			'REQUESTED',
+			'RECEIPTED',
+			'CANCELLED',
+			'ASSIGNED',
+			'REJECTED',
+			'DELETED'
+		)
+    )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 배차
