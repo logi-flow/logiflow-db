@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `drivers` (
         )
     ),
     CONSTRAINT ck_drivers_district CHECK (
-        district IN ('E', 'W', 'N', 'S')
+        district IN ('JUNG', 'SEO', 'DONG', 'YEONGDO', 'JIN', 'DONGNAE', 'NAM', 'BUK', 'HAEUNDAE', 'SAHA', 'GEUMJUNG', 'GANGSEO', 'YEONJE', 'SUYEONG', 'SASANG', 'GIAJNG')
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -234,6 +234,32 @@ CREATE TABLE IF NOT EXISTS `assignments` (
         status IN ('ACTIVE', 'PAUSED', 'DELETED')
     )
     # ACTIVE: 유효한 배정, PAUSED: 수리에 의한 중지, DELETED: 기사의 퇴사, 차량의 상태에 따른 배정 삭제
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 수거지
+CREATE TABLE IF NOT EXISTS `collection_sites` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    customer_id BIGINT NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    pickup_zipcode VARCHAR(20) NOT NULL,
+    pickup_address VARCHAR(255) NOT NULL,
+    pickup_address_detail VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_collection_sites_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 도착지
+CREATE TABLE IF NOT EXISTS `destination_sites` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    customer_id BIGINT NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    pickup_zipcode VARCHAR(20) NOT NULL,
+    pickup_address VARCHAR(255) NOT NULL,
+    pickup_address_detail VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_destination_sites_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 배송
@@ -373,6 +399,9 @@ CREATE TABLE IF NOT EXISTS `allowance_types` (
         status IN ('ACTIVE', 'DELETED')
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+INSERT INTO `allowance_types`
+VALUES(DEFAULT, 'BASE', '기본급', 'SYSTEM 자동 생성', TRUE, 'ACTIVE', DEFAULT, DEFAULT);
 
 --# 공제 항목
 CREATE TABLE IF NOT EXISTS `deduction_types` (
@@ -561,7 +590,6 @@ CREATE TABLE IF NOT EXISTS `contracts_update_logs` (
     contract_id BIGINT,
     changed_by BIGINT,
     changed_by_username VARCHAR(20) NOT NULL,
-    memo VARCHAR(255),
     type VARCHAR(50) NOT NULL,
     prev_data VARCHAR(100),
     new_data VARCHAR(100),
@@ -776,6 +804,33 @@ CREATE TABLE IF NOT EXISTS `assignments_update_logs` (
     CONSTRAINT fk_assignments_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+--# 배정 상태 로그
+CREATE TABLE IF NOT EXISTS `assignments_status_logs` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    assignment_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+    prev_status VARCHAR(100) NOT NULL,
+    new_status VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_assignments_assignments_status_logs_id FOREIGN KEY (assignment_id) REFERENCES assignments (id) ON DELETE SET NULL,
+    CONSTRAINT ck_assignments_status_logs_prev_status CHECK (
+        prev_status IN (
+        'ACTIVE',
+		'PAUSED',
+		'DELETED'
+        )
+    ),
+        CONSTRAINT ck_assignments_status_logs_new_status CHECK (
+        new_status IN (
+        'ACTIVE',
+		'PAUSED',
+		'DELETED'
+        )
+    )
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 --# 배차 정보 수정 로그
 CREATE TABLE IF NOT EXISTS `allocations_update_logs` (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -917,7 +972,3 @@ CREATE TABLE IF NOT EXISTS `driver_deductions_update_logs` (
     CONSTRAINT fk_driver_deductions_update_logs_driver_deduction_id FOREIGN KEY (driver_deduction_id) REFERENCES driver_deductions(id) ON DELETE SET NULL,
     CONSTRAINT fk_driver_deductions_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
---# 수당 항목 기본급(BASE) 추가
-INSERT INTO `allowance_types`
-VALUES(DEFAULT, 'BASE', '기본급', 'SYSTEM 자동 생성', TRUE, 'ACTIVE', DEFAULT, DEFAULT);
