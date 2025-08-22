@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
             'ADMIN',
             'DRIVER',
             'CUSTOMER',
+            'EMPLOYEE',
             'ALLOCATIONS_MANAGER',
             'HUMAN_RESOURCES_MANAGER'
         )
@@ -308,6 +309,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 CREATE TABLE IF NOT EXISTS `return_deliveries` (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
 	delivery_id BIGINT NOT NULL,
+    customer_id BIGINT NOT NULL,
     request_date DATE NOT NULL,
     reason TEXT NOT NULL,
     status VARCHAR(20) NOT NULL,
@@ -321,9 +323,15 @@ CREATE TABLE IF NOT EXISTS `return_deliveries` (
     recipient_zipcode VARCHAR(20) NOT NULL,
     recipient_address VARCHAR(255) NOT NULL,
     recipient_address_detail VARCHAR(255),
+    final_fee INT NOT NULL,
+    over_weight_fee INT DEFAULT 0,
+    over_parcel_fee INT DEFAULT 0,
+    is_over_weight BOOLEAN DEFAULT FALSE,
+    is_over_parcel BOOLEAN DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_return_delieries_delivery_id FOREIGN KEY (delivery_id) REFERENCES deliveries (id),
+    CONSTRAINT fk_return_deliveris_customer_id FOREIGN KEY (customer_id) REFERENCES customers (id),
 	CONSTRAINT ck_return_delieries_status CHECK (
 		status IN (
 			'REQUESTED',
@@ -780,6 +788,52 @@ CREATE TABLE IF NOT EXISTS `deliveries_status_logs` (
         )
     ),
     CONSTRAINT ck_deliveries_status_logs_new_status CHECK (
+        new_status IN (
+            'REQUESTED',
+            'RECEIPTED',
+            'CANCELLED',
+            'ASSIGNED',
+            'REJECTED'
+        )
+    )
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 반품 배송 정보 수정 로그
+CREATE TABLE IF NOT EXISTS `return_deliveries_update_logs` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    return_delivery_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    prev_data VARCHAR(255),
+    new_data VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_return_deliveries_update_logs_delivery_id FOREIGN KEY (return_delivery_id) REFERENCES return_deliveries (id) ON DELETE SET NULL,
+    CONSTRAINT fk_return_deliveries_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 반품 배송 상태 로그
+CREATE TABLE IF NOT EXISTS `return_deliveries_status_logs` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    return_delivery_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+    prev_status VARCHAR(100) NOT NULL,
+    new_status VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_return_deliveries_status_logs_delivery_id FOREIGN KEY (return_delivery_id) REFERENCES return_deliveries (id) ON DELETE SET NULL,
+    CONSTRAINT fk_return_deliveries_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT ck_return_deliveries_status_logs_prev_status CHECK (
+        prev_status IN (
+            'REQUESTED',
+            'RECEIPTED',
+            'CANCELLED',
+            'ASSIGNED',
+            'REJECTED'
+        )
+    ),
+    CONSTRAINT ck_return_deliveries_status_logs_new_status CHECK (
         new_status IN (
             'REQUESTED',
             'RECEIPTED',
