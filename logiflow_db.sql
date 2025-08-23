@@ -518,6 +518,32 @@ CREATE TABLE IF NOT EXISTS `delete_logs` (
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+--# 사용자 상태 로그
+CREATE TABLE IF NOT EXISTS `users_status_logs` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+    prev_status VARCHAR(100) NOT NULL,
+    new_status VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_users_status_logs_users_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_users_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT ck_users_status_logs_prev_status CHECK (
+        prev_status IN (
+			'ACTIVE',
+            'DELETED'
+        )
+    ),
+    CONSTRAINT ck_users_status_logs_new_status CHECK (
+        new_status IN (
+            'ACTIVE',
+            'DELETED'
+        )
+    )
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 --# 사용자 역할 로그
 CREATE TABLE IF NOT EXISTS `users_role_logs` (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
