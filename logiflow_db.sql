@@ -468,10 +468,15 @@ CREATE TABLE IF NOT EXISTS `driver_allowances` (
     unit_price INT NOT NULL,
     amount INT NOT NULL,
     memo TEXT,
+    status VARCHAR(20) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_driver_allowances_payroll_id_allowance_type_id UNIQUE (payroll_id, allowance_type_id),
     CONSTRAINT fk_driver_allowances_payroll_id FOREIGN KEY (payroll_id) REFERENCES driver_payrolls (id) ON DELETE CASCADE,
-    CONSTRAINT fk_driver_allowances_allowance_type_id FOREIGN KEY (allowance_type_id) REFERENCES allowance_types (id)
+    CONSTRAINT fk_driver_allowances_allowance_type_id FOREIGN KEY (allowance_type_id) REFERENCES allowance_types (id),
+    CONSTRAINT ck_driver_allowances_status CHECK (
+        status IN ('ACTIVE', 'DELETED')
+    )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 공제 내역
@@ -483,10 +488,15 @@ CREATE TABLE IF NOT EXISTS `driver_deductions` (
     unit_price INT NOT NULL,
     amount INT NOT NULL,
     memo TEXT,
+    status VARCHAR(20) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_driver_deductions_payroll_id_deduction_type_id UNIQUE (payroll_id, deduction_type_id),
     CONSTRAINT fk_driver_deductions_payroll_id FOREIGN KEY (payroll_id) REFERENCES driver_payrolls (id) ON DELETE CASCADE,
-    CONSTRAINT fk_driver_deductions_deduction_type_id FOREIGN KEY (deduction_type_id) REFERENCES deduction_types (id)
+    CONSTRAINT fk_driver_deductions_deduction_type_id FOREIGN KEY (deduction_type_id) REFERENCES deduction_types (id),
+    CONSTRAINT ck_driver_deductions_status CHECK (
+        status IN ('ACTIVE', 'DELETED')
+    )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 알림
