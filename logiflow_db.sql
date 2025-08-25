@@ -309,7 +309,6 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 CREATE TABLE IF NOT EXISTS `return_deliveries` (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
 	delivery_id BIGINT NOT NULL,
-    customer_id BIGINT NOT NULL,
     request_date DATE NOT NULL,
     reason TEXT NOT NULL,
     status VARCHAR(20) NOT NULL,
@@ -331,7 +330,6 @@ CREATE TABLE IF NOT EXISTS `return_deliveries` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_return_delieries_delivery_id FOREIGN KEY (delivery_id) REFERENCES deliveries (id),
-    CONSTRAINT fk_return_deliveris_customer_id FOREIGN KEY (customer_id) REFERENCES customers (id),
 	CONSTRAINT ck_return_delieries_status CHECK (
 		status IN (
 			'REQUESTED',
