@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS `logi_flow_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE `logi_flow_db`;
+-- drop database logi_flow_db;
 
 --# 권한
 CREATE TABLE IF NOT EXISTS `roles` (
@@ -672,6 +673,20 @@ CREATE TABLE IF NOT EXISTS `contracts_status_logs` (
             'DELETED'
         )
     )
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 차량 정보 수정 로그
+CREATE TABLE IF NOT EXISTS `vehicles_update_logs` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    vehicle_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    prev_data VARCHAR(100),
+    new_data VARCHAR(100),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_vehicles_update_logs_vehicle_id FOREIGN KEY (vehicle_id) REFERENCES vehicles (id) ON DELETE SET NULL,
+    CONSTRAINT fk_vehicles_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 차량 상태 로그
