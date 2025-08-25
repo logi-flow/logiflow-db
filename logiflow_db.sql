@@ -347,13 +347,15 @@ CREATE TABLE IF NOT EXISTS `return_deliveries` (
 --# 배차
 CREATE TABLE IF NOT EXISTS `allocations` (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    delivery_id BIGINT NOT NULL,
+    delivery_id BIGINT,
+    return_delivery_id BIGINT,
     assignment_id BIGINT NOT NULL,
     district_name VARCHAR(20) NOT NULL,
     status VARCHAR(20) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_allocations_delivery_id FOREIGN KEY (delivery_id) REFERENCES deliveries (id) ON DELETE CASCADE,
+    CONSTRAINT fk_allocations_return_delivery_id FOREIGN KEY (return_delivery_id) REFERENCES return_deliveries (id) ON DELETE CASCADE,
     CONSTRAINT fk_allocations_assignment_id FOREIGN KEY (assignment_id) REFERENCES assignments (id) ON DELETE CASCADE,
     CONSTRAINT ck_allocations_status CHECK (
         status IN (
