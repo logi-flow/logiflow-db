@@ -21,7 +21,12 @@ CREATE TABLE IF NOT EXISTS `roles` (
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-INSERT INTO `roles` (id, name) VALUES (DEFAULT, 'ADMIN');
+INSERT INTO `roles` (id, name) VALUES (DEFAULT, 'ADMIN'),
+									  (DEFAULT, 'DRIVER'),
+                                      (DEFAULT, 'CUSTOMER'),
+                                      (DEFAULT, 'EMPLOYEE'),
+                                      (DEFAULT, 'ALLOCATIONS_MANAGER'),
+                                      (DEFAULT, 'HUMAN_RESOURCES_MANAGER');
 
 --# 유저
 CREATE TABLE IF NOT EXISTS `users` (
@@ -513,7 +518,7 @@ CREATE TABLE IF NOT EXISTS `alerts` (
     user_id BIGINT NOT NULL,
     message TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_alerts_driver_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_alerts_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 삭제 로그
@@ -754,16 +759,16 @@ CREATE TABLE IF NOT EXISTS `drivers_status_logs` (
     CONSTRAINT fk_drivers_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT ck_drivers_status_logs_prev_status CHECK (
         prev_status IN (
-            'ACTIVED',
-            'INACTIVED',
-            'ASSIGNED'
+            'WORKING',
+            'ON_LEAVE',
+            'RETIRED'
         )
     ),
     CONSTRAINT ck_drivers_status_logs_new_status CHECK (
         new_status IN (
-            'ACTIVED',
-            'INACTIVED',
-            'ASSIGNED'
+            'WORKING',
+            'ON_LEAVE',
+            'RETIRED'
         )
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -780,6 +785,34 @@ CREATE TABLE IF NOT EXISTS `employees_update_logs` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_employees_update_logs_employee_id FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE SET NULL,
     CONSTRAINT fk_employees_update_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+--# 직원 상태 로그
+CREATE TABLE IF NOT EXISTS `employees_status_logs` (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    employee_id BIGINT,
+    changed_by BIGINT,
+    changed_by_username VARCHAR(20) NOT NULL,
+    change_reason VARCHAR(255),
+    prev_status VARCHAR(100) NOT NULL,
+    new_status VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_employees_status_logs_driver_id FOREIGN KEY (employee_id) REFERENCES employees (id) ON DELETE SET NULL,
+    CONSTRAINT fk_employees_status_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT ck_employees_status_logs_prev_status CHECK (
+        prev_status IN (
+            'WORKING',
+            'ON_LEAVE',
+            'RETIRED'
+        )
+    ),
+    CONSTRAINT ck_employees_status_logs_new_status CHECK (
+        new_status IN (
+            'WORKING',
+            'ON_LEAVE',
+            'RETIRED'
+        )
+    )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 직원 인사 정보 수정 로그
