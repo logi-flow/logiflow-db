@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     password VARCHAR(255) NOT NULL,
 	email VARCHAR(100) NOT NULL,
     status VARCHAR(20) NOT NULL,
+    must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_users_username UNIQUE (username),
@@ -262,7 +263,8 @@ CREATE TABLE IF NOT EXISTS `collection_sites` (
     address_detail VARCHAR(255),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_collection_sites_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
+    CONSTRAINT fk_collection_sites_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE,
+	CONSTRAINT uq_destination_sites_phone_number UNIQUE (phone_number)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 도착지
@@ -276,7 +278,8 @@ CREATE TABLE IF NOT EXISTS `destination_sites` (
     address_detail VARCHAR(255),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_destination_sites_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE
+    CONSTRAINT fk_destination_sites_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE,
+	CONSTRAINT uq_destination_sites_phone_number UNIQUE (phone_number)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 --# 배송
@@ -290,11 +293,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
     message VARCHAR(255),
     is_hidden BOOLEAN DEFAULT FALSE,
     status VARCHAR(20) NOT NULL,
-    pickup_name VARCHAR(100) NOT NULL,
-    pickup_phone VARCHAR(20) NOT NULL,
-    pickup_zipcode VARCHAR(20) NOT NULL,
-    pickup_address VARCHAR(255) NOT NULL,
-    pickup_address_detail VARCHAR(255),
+    collection_site_id BIGINT NOT NULL,
     recipient_name VARCHAR(100) NOT NULL,
     recipient_phone VARCHAR(20) NOT NULL,
     recipient_zipcode VARCHAR(20) NOT NULL,
@@ -309,6 +308,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_deliveries_contract_id FOREIGN KEY (contract_id) REFERENCES contracts (id) ON DELETE CASCADE,
     CONSTRAINT fk_deliveries_customer_id FOREIGN KEY (customer_id) REFERENCES customers (id) ON DELETE CASCADE,
+	CONSTRAINT fk_deliveries_collection_site_id FOREIGN KEY (collection_site_id) REFERENCES collection_sites (id) ON DELETE CASCADE,
 	CONSTRAINT ck_delivery_status CHECK (
         status IN (
             'REQUESTED',
