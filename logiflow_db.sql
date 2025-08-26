@@ -139,6 +139,7 @@ CREATE TABLE IF NOT EXISTS `employees` (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     name VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL,
     identity_number VARCHAR(50) NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
@@ -156,6 +157,13 @@ CREATE TABLE IF NOT EXISTS `employees` (
         department IN (
             'HUMAN_RESOURCES',
             'LOGISTICS_MANAGEMENT'
+        )
+    ),
+    CONSTRAINT ck_employees_status CHECK (
+        status IN (
+            'WORKING',
+            'ON_LEAVE',
+            'RETIRED'
         )
     ),
     # HUMAN_RESOURCES: 인사팀, logsISTICS_MANAGEMENT: 물류팀
@@ -244,6 +252,7 @@ CREATE TABLE IF NOT EXISTS `collection_sites` (
     customer_id BIGINT NOT NULL,
     name VARCHAR(20) NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
     address_detail VARCHAR(255),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -257,6 +266,7 @@ CREATE TABLE IF NOT EXISTS `destination_sites` (
     customer_id BIGINT NOT NULL,
     name VARCHAR(20) NOT NULL,
     zipcode VARCHAR(20) NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
     address VARCHAR(255) NOT NULL,
     address_detail VARCHAR(255),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -318,11 +328,7 @@ CREATE TABLE IF NOT EXISTS `return_deliveries` (
     pickup_zipcode VARCHAR(20) NOT NULL,
     pickup_address VARCHAR(255) NOT NULL,
     pickup_address_detail VARCHAR(255),
-    recipient_name VARCHAR(100) NOT NULL,
-    recipient_phone VARCHAR(20) NOT NULL,
-    recipient_zipcode VARCHAR(20) NOT NULL,
-    recipient_address VARCHAR(255) NOT NULL,
-    recipient_address_detail VARCHAR(255),
+    destination_site_id BIGINT NOT NULL,
     final_fee INT NOT NULL,
     over_weight_fee INT DEFAULT 0,
     over_parcel_fee INT DEFAULT 0,
@@ -331,6 +337,7 @@ CREATE TABLE IF NOT EXISTS `return_deliveries` (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_return_delieries_delivery_id FOREIGN KEY (delivery_id) REFERENCES deliveries (id),
+    CONSTRAINT fk_return_delieries_destination_site_id FOREIGN KEY (destination_site_id) REFERENCES destination_sites (id),
 	CONSTRAINT ck_return_delieries_status CHECK (
 		status IN (
 			'REQUESTED',
