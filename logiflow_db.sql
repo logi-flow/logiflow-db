@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 	email VARCHAR(100) NOT NULL,
     status VARCHAR(20) NOT NULL,
     must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
+	profile_image_id BIGINT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT uq_users_username UNIQUE (username),
@@ -511,6 +512,23 @@ CREATE TABLE IF NOT EXISTS `driver_deductions` (
         status IN ('ACTIVE', 'DELETED')
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `upload_files` (
+	id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    original_name VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size BIGINT NOT NULL,
+    target_id BIGINT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_target (target_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+ALTER TABLE `users`
+ADD CONSTRAINT fk_users_profile_image_id
+FOREIGN KEY (profile_image_id) REFERENCES upload_files(id);
 
 --# 알림
 CREATE TABLE IF NOT EXISTS `alerts` (
