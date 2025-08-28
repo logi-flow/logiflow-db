@@ -328,6 +328,7 @@ CREATE TABLE IF NOT EXISTS `return_deliveries` (
 	delivery_id BIGINT NOT NULL,
     request_date DATE NOT NULL,
     reason TEXT NOT NULL,
+    is_hidden BOOLEAN DEFAULT FALSE,
     status VARCHAR(20) NOT NULL,
 	pickup_name VARCHAR(100) NOT NULL,
     pickup_phone VARCHAR(20) NOT NULL,
