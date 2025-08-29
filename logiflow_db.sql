@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
             'DRIVER',
             'CUSTOMER',
             'EMPLOYEE',
+			'CONTRACTS_MANAGER',
             'ALLOCATIONS_MANAGER',
             'HUMAN_RESOURCES_MANAGER'
         )
@@ -25,6 +26,7 @@ INSERT INTO `roles` (id, name) VALUES (DEFAULT, 'ADMIN'),
 									  (DEFAULT, 'DRIVER'),
                                       (DEFAULT, 'CUSTOMER'),
                                       (DEFAULT, 'EMPLOYEE'),
+									  (DEFAULT, 'CONTRACTS_MANAGER'),
                                       (DEFAULT, 'ALLOCATIONS_MANAGER'),
                                       (DEFAULT, 'HUMAN_RESOURCES_MANAGER');
 
