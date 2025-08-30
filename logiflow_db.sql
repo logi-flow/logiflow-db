@@ -80,7 +80,8 @@ CREATE TABLE IF NOT EXISTS `customers` (
         status IN (
             'PENDING',
             'APPROVED',
-            'REJECTED'
+            'REJECTED',
+            'DELETED'
         )
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -650,14 +651,16 @@ CREATE TABLE IF NOT EXISTS `customers_status_logs` (
         prev_status IN (
             'PENDING',
             'APPROVED',
-            'REJECTED'
+            'REJECTED',
+            'DELETED'
         )
     ),
     CONSTRAINT ck_customers_status_logs_new_status CHECK (
         new_status IN (
             'PENDING',
             'APPROVED',
-            'REJECTED'
+            'REJECTED',
+            'DELETED'
         )
     )
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
